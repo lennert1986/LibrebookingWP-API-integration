@@ -1,5 +1,5 @@
 <?php
-// Shortcode-funktion til at vise ressourcer
+session_start();
 // Shortcode-funktion til at vise ressourcer
 function librebooking_resources_shortcode() {
     if (!isset($_SESSION['X-Booked-SessionToken'])) {
@@ -109,68 +109,64 @@ add_shortcode('librebooking_login', 'librebooking_login_shortcode');
 
 // Shortcode-funktion til logout
 function librebooking_auth_shortcode($atts) {
-    // Start sessionen, hvis den ikke allerede er startet
-    if (!session_id()) {
-        session_start();
-    }
-
-    // Hvis brugeren allerede er logget ind
-    if (isset($_SESSION['X-Booked-SessionToken'])) {
-        if (isset($_POST['librebooking_logout'])) {
-            if (librebooking_logout()) {
+    // Hvis sessionen ikke er aktiv, er brugeren ikke logget ind
+    if (session_status() !== PHP_SESSION_ACTIVE || !isset($_SESSION['X-Booked-SessionToken']) || librebooking_is_session_token_expired()) {
+        if (isset($_POST['librebooking_login'])) {
+            $username = sanitize_text_field($_POST['username']);
+            $password = sanitize_text_field($_POST['password']);
+            
+            if (librebooking_login($username, $password)) {
                 ob_start();
-                echo 'You have been logged out.';
+                echo 'Login successful.';
                 ?>
                 <form method="post">
-                    <label for="username">Username:</label><br>
-                    <input type="text" id="username" name="username" required><br><br>
-                    <label for="password">Password:</label><br>
-                    <input type="password" id="password" name="password" required><br><br>
-                    <input type="submit" name="librebooking_login" value="Login">
+                    <input type="submit" name="librebooking_logout" value="Logout">
                 </form>
                 <?php
                 return ob_get_clean();
             } else {
-                return 'Logout failed. Please try again.';
+                return 'Login failed. Please check your credentials.';
             }
         }
 
         ob_start();
-        echo 'Login successful.';
         ?>
         <form method="post">
-            <input type="submit" name="librebooking_logout" value="Logout">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" name="librebooking_login" value="Login">
         </form>
         <?php
         return ob_get_clean();
     }
 
-    if (isset($_POST['librebooking_login'])) {
-        $username = sanitize_text_field($_POST['username']);
-        $password = sanitize_text_field($_POST['password']);
-        
-        if (librebooking_login($username, $password)) {
+    // Hvis brugeren allerede er logget ind
+    if (isset($_POST['librebooking_logout'])) {
+        if (librebooking_logout()) {
             ob_start();
-            echo 'Login successful.';
+            echo 'You have been logged out.';
             ?>
             <form method="post">
-                <input type="submit" name="librebooking_logout" value="Logout">
+                <label for="username">Username:</label><br>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Password:</label><br>
+                <input type="password" id="password" name="password" required><br><br>
+                <input type="submit" name="librebooking_login" value="Login">
             </form>
             <?php
             return ob_get_clean();
         } else {
-            return 'Login failed. Please check your credentials.';
+            return 'Logout failed. Please try again.';
         }
     }
 
     ob_start();
+    echo 'Login successful.';
     ?>
     <form method="post">
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" name="librebooking_login" value="Login">
+        <input type="submit" name="librebooking_logout" value="Logout">
     </form>
     <?php
     return ob_get_clean();
