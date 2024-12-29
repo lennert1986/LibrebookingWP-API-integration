@@ -26,10 +26,10 @@ function librebooking_update_session($user_id, $session_token) {
 // Funktion til at hente API-URL'er fra plugin-indstillingerne
 function librebooking_get_api_urls() {
     $base_url = get_option('librebooking_base_url', '');
-if (empty($base_url)) {
-    error_log('Base URL is not configured. Please set it in the LibreBooking settings.');
-    return [];
-}
+    if (empty($base_url)) {
+        error_log('Base URL is not configured. Please set it in the LibreBooking settings.');
+        return [];
+    }
     $default_urls = [
         'login' => $base_url . 'Web/Services/index.php/Authentication/Authenticate',
         'logout' => $base_url . 'Web/Services/index.php/Authentication/SignOut',
@@ -45,6 +45,7 @@ if (empty($base_url)) {
         'icsFeeds' => $base_url . 'Web/Services/index.php/IcsFeeds/',
         'account' => $base_url . 'Web/Services/index.php/Accounts/',
     ];
+
     return $default_urls;
 }
 
@@ -324,10 +325,10 @@ function librebooking_get_accessories_fields() {
     foreach ($accessories_data['accessories'] as $accessory) {
         $accessoryId = esc_attr($accessory['id']);
         $accessoryName = esc_html($accessory['name']);
-        $associatedResourceCount = isset($accessory['associatedResourceCount']) ? intval($accessory['associatedResourceCount']) : 1;
+        $quantityAvailable = isset($accessory['quantityAvailable']) ? intval($accessory['quantityAvailable']) : 1;
 
         $fields .= "<label for=\"accessory_$accessoryId\">$accessoryName:</label><br>";
-        $fields .= "<input type=\"number\" id=\"accessory_$accessoryId\" name=\"accessories[$accessoryId][quantity]\" value=\"0\" min=\"0\" max=\"$associatedResourceCount\" required><br><br>";
+        $fields .= "<input type=\"number\" id=\"accessory_$accessoryId\" name=\"accessories[$accessoryId][quantity]\" value=\"0\" min=\"0\" max=\"$quantityAvailable\" required><br><br>";
     }
 
     return $fields;
@@ -477,20 +478,67 @@ function librebooking_get_resources_options() {
     return $options;
 }
 
+// Funktion til at opdatere konto-oplysninger
+function librebooking_update_account_info($url, $data) {
+    // Log the URL being used
+    error_log('librebooking_update_account_info URL: ' . $url);
+
+    $args = [
+        'headers' => [
+            'origin' => home_url(),
+            'x-requested-with' => 'XMLHttpRequest',
+            'content-type' => 'application/json',
+            'x-booked-sessiontoken' => $_SESSION['X-Booked-SessionToken'] ?? '',
+            'x-booked-userid' => $_SESSION['X-Booked-UserId'] ?? '',
+        ],
+        'body' => json_encode($data),
+    ];
+
+    // Log the headers and body being sent
+    error_log('librebooking_update_account_info Headers: ' . print_r($args['headers'], true));
+    error_log('librebooking_update_account_info Body: ' . $args['body']);
+
+    $response = wp_remote_post($url, $args);
+
+    if (is_wp_error($response)) {
+        return $response;
+    }
+
+    $response_body = wp_remote_retrieve_body($response);
+    return json_decode($response_body, true);
+}
+
 // Funktion til at ændre kodeord
-function librebooking_change_password($user_id, $current_password, $new_password) {
-    $url = librebooking_get_api_urls()['account'] . $user_id . '/Password';
-    $body = json_encode([
+function librebooking_change_password($url, $current_password, $new_password) {
+    // Ret URL'en hvis nødvendigt
+    if (strpos($url, 'index.php/Users/:userId/Password') !== false) {
+        $url = str_replace('index.php/Users/:userId/Password', 'index.php/Accounts/:userId/Password', $url);
+    }
+
+    // Log the URL being used
+    error_log('librebooking_change_password URL: ' . $url);
+
+    $data = [
         'currentPassword' => $current_password,
         'newPassword' => $new_password,
-    ]);
+    ];
 
-    $response = wp_remote_post($url, [
+    $args = [
         'headers' => [
-            'Content-Type' => 'application/json',
+            'origin' => home_url(),
+            'x-requested-with' => 'XMLHttpRequest',
+            'content-type' => 'application/json',
+            'x-booked-sessiontoken' => $_SESSION['X-Booked-SessionToken'] ?? '',
+            'x-booked-userid' => $_SESSION['X-Booked-UserId'] ?? '',
         ],
-        'body' => $body,
-    ]);
+        'body' => json_encode($data),
+    ];
+
+    // Log the headers and body being sent
+    error_log('librebooking_change_password Headers: ' . print_r($args['headers'], true));
+    error_log('librebooking_change_password Body: ' . $args['body']);
+
+    $response = wp_remote_post($url, $args);
 
     if (is_wp_error($response)) {
         return $response;

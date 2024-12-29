@@ -109,6 +109,8 @@ add_shortcode('librebooking_login', 'librebooking_login_shortcode');
 
 // Shortcode-funktion til logout
 function librebooking_auth_shortcode($atts) {
+    $login_failed = false;
+
     // Hvis sessionen ikke er aktiv, er brugeren ikke logget ind
     if (session_status() !== PHP_SESSION_ACTIVE || !isset($_SESSION['X-Booked-SessionToken']) || librebooking_is_session_token_expired()) {
         if (isset($_POST['librebooking_login'])) {
@@ -125,11 +127,14 @@ function librebooking_auth_shortcode($atts) {
                 <?php
                 return ob_get_clean();
             } else {
-                return 'Login failed. Please check your credentials.';
+                $login_failed = true;
             }
         }
 
         ob_start();
+        if ($login_failed) {
+            echo '<p>Login failed. Please check your credentials.</p>';
+        }
         ?>
         <form method="post">
             <label for="username">Username:</label><br>
@@ -163,7 +168,6 @@ function librebooking_auth_shortcode($atts) {
     }
 
     ob_start();
-    echo 'Login successful.';
     ?>
     <form method="post">
         <input type="submit" name="librebooking_logout" value="Logout">
@@ -313,7 +317,8 @@ function librebooking_schedules_shortcode() {
 }
 add_shortcode('librebooking_schedules', 'librebooking_schedules_shortcode');
 
-// Shortcode-funktion til at vise konto-oplysninger
+
+
 // Shortcode-funktion til at vise konto-oplysninger
 function librebooking_account_info_shortcode() {
     // Hent konto-oplysninger via API
@@ -334,7 +339,24 @@ function librebooking_account_info_shortcode() {
         $new_password = sanitize_text_field($_POST['newPassword']);
         $user_id = isset($_SESSION['X-Booked-UserId']) ? $_SESSION['X-Booked-UserId'] : '';
 
-        $response = librebooking_change_password($user_id, $current_password, $new_password);
+        // Hent URL til at ændre kodeord
+        $change_password_url = '';
+        if (isset($account_info['parsed_links']['update_password'])) {
+            $change_password_url = $account_info['parsed_links']['update_password'];
+        }
+
+        // Ret URL'en hvis nødvendigt
+        if (strpos($change_password_url, 'index.php/Users/:userId/Password') !== false) {
+            $change_password_url = str_replace('index.php/Users/:userId/Password', 'index.php/Accounts/:userId/Password', $change_password_url);
+        }
+
+        // Erstat :userId med det korrekte bruger-ID fra sessionen
+        $change_password_url = str_replace(':userId', $user_id, $change_password_url);
+
+        // Debug log for URL
+        error_log('Change Password URL: ' . $change_password_url);
+
+        $response = librebooking_change_password($change_password_url, $current_password, $new_password);
 
         if (is_wp_error($response)) {
             echo '<p>Fejl: ' . esc_html($response->get_error_message()) . '</p>';
@@ -347,12 +369,16 @@ function librebooking_account_info_shortcode() {
     if (isset($_POST['librebooking_update_account_submit'])) {
         $user_id = isset($_SESSION['X-Booked-UserId']) ? $_SESSION['X-Booked-UserId'] : '';
         $update_url = '';
-        foreach ($account_info['parsed_links'] as $link) {
-            if ($link['title'] === 'update_user_account') {
-                $update_url = str_replace(':userId', $user_id, $link['href']);
-                break;
-            }
+
+        // Debug log for parsed_links
+        error_log('Parsed Links: ' . print_r($account_info['parsed_links'], true));
+
+        if (isset($account_info['parsed_links']['update_user_account'])) {
+            $update_url = str_replace(':userId', $user_id, $account_info['parsed_links']['update_user_account']);
         }
+
+        // Debug log for URL
+        error_log('Update URL: ' . $update_url);
 
         $update_data = [
             'firstName' => sanitize_text_field($_POST['firstName']),
@@ -373,6 +399,9 @@ function librebooking_account_info_shortcode() {
                 'attributeValue' => sanitize_text_field($attributeValue)
             ];
         }
+
+        // Debug log for data
+        error_log('Update Data: ' . json_encode($update_data));
 
         $response = librebooking_update_account_info($update_url, $update_data);
 
@@ -491,27 +520,6 @@ function librebooking_account_info_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('librebooking_account_info', 'librebooking_account_info_shortcode');
-
-// Funktion til at opdatere konto-oplysninger
-function librebooking_update_account_info($url, $data) {
-    $response = wp_remote_post($url, [
-        'headers' => [
-            'Content-Type' => 'application/json',
-        ],
-        'body' => json_encode($data),
-    ]);
-
-    if (is_wp_error($response)) {
-        return $response;
-    }
-
-    $response_body = wp_remote_retrieve_body($response);
-    return json_decode($response_body, true);
-}
-
-
-
-
 
 function librebooking_reservations_shortcode() {
     if (!isset($_SESSION['X-Booked-SessionToken'])) {
