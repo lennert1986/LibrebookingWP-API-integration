@@ -12,7 +12,9 @@ Shortcodes
 [librebooking_reservation_form]
 [librebooking_user_registration]
 
-
+Known problems.
+When debug is active you cant insert Shortcodes. Please insert/save and then activate debug.
+... and many more
 
 ### **Project Overview**
 
