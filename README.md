@@ -1,4 +1,18 @@
+This project is at an early stage. Please be patient
+
 **LibreBooking WordPress Integration Project**
+
+Shortcodes
+[librebooking_auth]
+[librebooking_resources]
+[librebooking_reservations]
+[librebooking_schedules]
+[librebooking_account_info]
+[librebooking_ics_feeds]
+[librebooking_reservation_form]
+[librebooking_user_registration]
+
+
 
 ### **Project Overview**
 
