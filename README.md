@@ -16,6 +16,10 @@ Known problems.
 When debug is active you cant insert Shortcodes. Please insert/save and then activate debug.
 ... and many more
 
+### **Installation**
+Copy libary in to plugins
+/wp-content/plugins/librebooking-integration
+
 ### **Project Overview**
 
 This project focuses on integrating LibreBooking, a flexible and scalable booking system, with a WordPress-based website. The primary goal of the integration is to create a user-friendly platform that enables the management of bookings, attributes, and user data directly from the WordPress dashboard and through frontend functionalities like shortcodes and user interfaces. The project emphasizes providing a seamless experience for both administrators and end-users.
