@@ -19,6 +19,7 @@ When debug is active you cant insert Shortcodes. Please insert/save and then act
 ### **Installation**
 Copy libary in to plugins
 /wp-content/plugins/librebooking-integration
+Remember to insert correct url to your librebooking and also activate api in settings
 
 ### **Project Overview**
 
