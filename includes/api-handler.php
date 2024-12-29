@@ -54,7 +54,7 @@ function librebooking_is_session_token_expired() {
         return true;
     }
 
-    $expires = new DateTime($_SESSION['sessionExpires']);
+    $expires = new DateTime('@' . $_SESSION['sessionExpires']);
     $now = new DateTime();
 
     return $now >= $expires;
@@ -74,7 +74,7 @@ function librebooking_ensure_session_token() {
     return true;
 }
 
-// Funktion til at lave API-foresp�rgsler
+// Funktion til at lave API-forespørgsler
 function librebooking_api_request($endpoint, $method = 'GET', $body = [], $category_id = null) {
     $result = librebooking_ensure_session_token();
     if ($result !== true) {
@@ -134,6 +134,14 @@ function librebooking_api_request($endpoint, $method = 'GET', $body = [], $categ
 
     $decoded_response = json_decode($response_body, true);
 
+    if (isset($decoded_response['message']) && strpos($decoded_response['message'], 'You must be authenticated in order to access this service.') !== false) {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            librebooking_clear_session();
+        }
+        error_log('API request failed. User is not authenticated.');
+        return ['error' => 'User is not authenticated.'];
+    }
+
     if (isset($decoded_response['links']) && is_array($decoded_response['links'])) {
         $parsed_links = [];
         foreach ($decoded_response['links'] as $link) {
@@ -150,6 +158,14 @@ function librebooking_api_request($endpoint, $method = 'GET', $body = [], $categ
     }
 
     return $decoded_response;
+}
+
+function librebooking_clear_session() {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_unset();
+        session_destroy();
+        error_log('Session cleared.');
+    }
 }
 
 
@@ -263,10 +279,7 @@ function librebooking_logout() {
     ]);
 
     if (!is_wp_error($response)) {
-        if (session_status() == PHP_SESSION_ACTIVE) {
-            session_unset();
-            session_destroy();
-        }
+        librebooking_clear_session();
         return true;
     }
 
