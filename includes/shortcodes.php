@@ -53,131 +53,6 @@ function librebooking_resources_shortcode() {
 }
 add_shortcode('librebooking_resources', 'librebooking_resources_shortcode');
 
-// Shortcode-funktion til at vise ICS feeds
-function librebooking_ics_feeds_shortcode() {
-    if (!isset($_SESSION['X-Booked-SessionToken'])) {
-        return 'You must be logged in to view ICS feeds.';
-    }
-
-    $ics_feeds = librebooking_get_ics_feeds();
-    if (is_array($ics_feeds)) {
-        ob_start();
-        echo '<ul>';
-        foreach ($ics_feeds as $feed) {
-            if (isset($feed['name'])) {
-                echo '<li>' . esc_html($feed['name']) . '</li>';
-            }
-        }
-        echo '</ul>';
-        return ob_get_clean();
-    } else {
-        return 'No ICS feeds found or an error occurred.';
-    }
-}
-add_shortcode('librebooking_ics_feeds', 'librebooking_ics_feeds_shortcode');
-
-// Shortcode-funktion til login
-function librebooking_login_shortcode($atts) {
-    if (isset($_SESSION['X-Booked-SessionToken'])) {
-        return '<p class="success">You are already logged in.</p>';
-    }
-
-    if (isset($_POST['librebooking_login'])) {
-        $username = sanitize_text_field($_POST['username']);
-        $password = sanitize_text_field($_POST['password']);
-
-        if (librebooking_login($username, $password)) {
-            return;
-        } else {
-            return '<p class="error">Login failed. Please check your credentials.</p>';
-        }
-    }
-
-    ob_start();
-    ?>
-    <form method="post">
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-        <input type="submit" name="librebooking_login" value="Login">
-    </form>
-    <?php
-    return ob_get_clean();
-}
-add_shortcode('librebooking_login', 'librebooking_login_shortcode');
-
-// Shortcode-funktion til logout
-function librebooking_auth_shortcode($atts) {
-    $login_failed = false;
-
-    // Hvis sessionen ikke er aktiv, er brugeren ikke logget ind
-    if (session_status() !== PHP_SESSION_ACTIVE || !isset($_SESSION['X-Booked-SessionToken']) || librebooking_is_session_token_expired()) {
-        if (isset($_POST['librebooking_login'])) {
-            $username = sanitize_text_field($_POST['username']);
-            $password = sanitize_text_field($_POST['password']);
-            
-            if (librebooking_login($username, $password)) {
-                ob_start();
-                echo 'Login successful.';
-                ?>
-                <form method="post">
-                    <input type="submit" name="librebooking_logout" value="Logout">
-                </form>
-                <?php
-                return ob_get_clean();
-            } else {
-                $login_failed = true;
-            }
-        }
-
-        ob_start();
-        if ($login_failed) {
-            echo '<p>Login failed. Please check your credentials.</p>';
-        }
-        ?>
-        <form method="post">
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br><br>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br><br>
-            <input type="submit" name="librebooking_login" value="Login">
-        </form>
-        <?php
-        return ob_get_clean();
-    }
-
-    // Hvis brugeren allerede er logget ind
-    if (isset($_POST['librebooking_logout'])) {
-        if (librebooking_logout()) {
-            ob_start();
-            echo 'You have been logged out.';
-            ?>
-            <form method="post">
-                <label for="username">Username:</label><br>
-                <input type="text" id="username" name="username" required><br><br>
-                <label for="password">Password:</label><br>
-                <input type="password" id="password" name="password" required><br><br>
-                <input type="submit" name="librebooking_login" value="Login">
-            </form>
-            <?php
-            return ob_get_clean();
-        } else {
-            return 'Logout failed. Please try again.';
-        }
-    }
-
-    ob_start();
-    ?>
-    <form method="post">
-        <input type="submit" name="librebooking_logout" value="Logout">
-    </form>
-    <?php
-    return ob_get_clean();
-}
-add_shortcode('librebooking_auth', 'librebooking_auth_shortcode');
-
-
 // Funktion til at hente ressourcer og generere HTML for dropdown
 function librebooking_get_resources_dropdown() {
     $resources_data = librebooking_get_resources();
@@ -209,7 +84,7 @@ function librebooking_get_resources_dropdown() {
 function librebooking_reservation_form_shortcode($atts) {
     // Tjek om brugeren er logget ind
     if (!isset($_SESSION['X-Booked-SessionToken'])) {
-        return 'You must be logged in to make a reservation.';
+        return;
     }
 
     // Hvis formularen er indsendt
@@ -295,25 +170,38 @@ function librebooking_reservation_form_shortcode($atts) {
 }
 add_shortcode('librebooking_reservation_form', 'librebooking_reservation_form_shortcode');
 
+// Shortcode-funktion til at vise alle skemaer
 function librebooking_schedules_shortcode() {
+    // Kontrollér, om brugeren er logget ind
     if (!isset($_SESSION['X-Booked-SessionToken'])) {
         return 'You must be logged in to view schedules.';
     }
 
-    $schedules = librebooking_get_schedules();
-    if (is_array($schedules)) {
-        ob_start();
-        echo '<ul>';
-        foreach ($schedules as $schedule) {
-            if (isset($schedule['name'])) {
-                echo '<li>' . esc_html($schedule['name']) . '</li>';
-            }
-        }
-        echo '</ul>';
-        return ob_get_clean();
-    } else {
-        return 'No schedules found or an error occurred.';
+    $schedules = librebooking_get_all_schedules();
+
+    if (is_string($schedules)) {
+        return '<p>Error: ' . esc_html($schedules) . '</p>';
     }
+
+    if (empty($schedules)) {
+        return '<p>No schedules found.</p>';
+    }
+
+    ob_start();
+    echo '<ul>';
+    foreach ($schedules as $schedule) {
+        echo '<li>';
+        echo '<strong>' . esc_html($schedule['name']) . '</strong><br>';
+        echo 'Timezone: ' . esc_html($schedule['timezone']) . '<br>';
+        echo 'Days Visible: ' . esc_html($schedule['daysVisible']) . '<br>';
+        echo 'Availability Begin: ' . esc_html($schedule['availabilityBegin']) . '<br>';
+        echo 'Availability End: ' . esc_html($schedule['availabilityEnd']) . '<br>';
+        echo 'Max Resources Per Reservation: ' . esc_html($schedule['maxResourcesPerReservation']) . '<br>';
+        echo 'Total Concurrent Reservations Allowed: ' . esc_html($schedule['totalConcurrentReservationsAllowed']) . '<br>';
+        echo '</li>';
+    }
+    echo '</ul>';
+    return ob_get_clean();
 }
 add_shortcode('librebooking_schedules', 'librebooking_schedules_shortcode');
 
@@ -321,6 +209,11 @@ add_shortcode('librebooking_schedules', 'librebooking_schedules_shortcode');
 
 // Shortcode-funktion til at vise konto-oplysninger
 function librebooking_account_info_shortcode() {
+    // Kontrollér om brugeren er logget ind
+    if (!isset($_SESSION['X-Booked-SessionToken'])) {
+        return 'You must be logged in to view profile.';
+    }
+
     // Hent konto-oplysninger via API
     $account_info = librebooking_get_account_info();
 
@@ -331,6 +224,18 @@ function librebooking_account_info_shortcode() {
 
     if (!is_array($account_info)) {
         return '<p>Kunne ikke hente konto-oplysninger. Kontroller API-responsen.</p>';
+    }
+
+    // Læs tidszoner fra CSV-fil
+    $timezones = [];
+    if (($handle = fopen(dirname(__FILE__) . '/../locale/time_zone.csv', 'r')) !== false) {
+        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+            $timezone = $data[0];
+            if (!in_array($timezone, $timezones)) {
+                $timezones[] = $timezone;
+            }
+        }
+        fclose($handle);
     }
 
     // Håndter formularindsendelse for at ændre kodeord
@@ -415,47 +320,10 @@ function librebooking_account_info_shortcode() {
     // Hent customAttributes
     $custom_attributes = isset($account_info['customAttributes']) ? $account_info['customAttributes'] : [];
 
-    // Hent attributfelterne for en given kategori (f.eks. kategori 2)
-    $category_id = 2; // Du kan ændre dette til den ønskede kategori
-    $resourceId = isset($_SESSION['X-Booked-UserId']) ? $_SESSION['X-Booked-UserId'] : '';
-    $attributes_fields = librebooking_get_attributes_fields($resourceId, $category_id, $custom_attributes);
-
     // Generér HTML for at vise konto-oplysninger
     ob_start();
     ?>
     <h2>Kontooplysninger</h2>
-    <ul>
-    <?php
-    foreach ($account_info as $key => $value) {
-        if ($key === 'parsed_links' && is_array($value)) {
-            echo '<li>Links:<ul>';
-            foreach ($value as $title => $href) {
-                // Erstat :userId med det korrekte bruger-ID fra sessionen
-                if (strpos($href, ':userId') !== false) {
-                    $user_id = isset($_SESSION['X-Booked-UserId']) ? $_SESSION['X-Booked-UserId'] : '';
-                    $href = str_replace(':userId', $user_id, $href);
-                }
-                echo '<li>' . esc_html($title) . ': <a href="' . esc_url($href) . '" target="_blank">' . esc_html($href) . '</a></li>';
-            }
-            echo '</ul></li>';
-        } elseif ($key === 'customAttributes' && is_array($value)) {
-            echo '<li>Custom Attributes:<ul>';
-            foreach ($value as $attribute) {
-                if (isset($attribute['id'])) {
-                    $attribute_label = esc_html($attribute['label']);
-                    $attribute_value = esc_html($attribute['value']);
-                    echo '<li>' . $attribute_label . ': ' . $attribute_value . '</li>';
-                }
-            }
-            echo '</ul></li>';
-        } else {
-            echo '<li>' . esc_html($key) . ': ' . esc_html(is_array($value) ? json_encode($value) : $value) . '</li>';
-        }
-    }
-    ?>
-    </ul>
-
-
 
     <form method="post" id="librebooking-update-account-form">
         <label for="firstName">First Name:</label><br>
@@ -474,7 +342,13 @@ function librebooking_account_info_shortcode() {
         <input type="text" id="language" name="language" value="<?php echo esc_attr($account_info['language']); ?>" required><br><br>
 
         <label for="timezone">Timezone:</label><br>
-        <input type="text" id="timezone" name="timezone" value="<?php echo esc_attr($account_info['timezone']); ?>" required><br><br>
+        <select id="timezone" name="timezone" required>
+            <?php foreach ($timezones as $timezone): ?>
+                <option value="<?php echo esc_attr($timezone); ?>" <?php selected($account_info['timezone'], $timezone); ?>>
+                    <?php echo esc_html($timezone); ?>
+                </option>
+            <?php endforeach; ?>
+        </select><br><br>
 
         <label for="phone">Phone:</label><br>
         <input type="text" id="phone" name="phone" value="<?php echo esc_attr($account_info['phone']); ?>" required><br><br>
@@ -490,24 +364,27 @@ function librebooking_account_info_shortcode() {
             <input type="text" id="customAttribute_<?php echo esc_attr($attribute['id']); ?>" name="customAttributes[<?php echo esc_attr($attribute['id']); ?>]" value="<?php echo esc_attr($attribute['value']); ?>"><br><br>
         <?php endforeach; ?>
 
-        <input type="submit" name="librebooking_update_account_submit" value="Opdater Konto">
+        <input type="submit" name="librebooking_update_account_submit" value="Opdater Konto" class="button">
     </form>
 
-    <button id="change-password-button">Ændre kodeord</button>
-    <form id="change-password-form" method="post" style="display:none;">
-        <label for="currentPassword">Nuværende kodeord:</label><br>
-        <input type="password" id="currentPassword" name="currentPassword" required><br><br>
+    <form id="change-password-form" method="post">
+        <button id="change-password-button" class="button">Ændre kodeord</button>
+        <div id="change-password-fields" style="display:none;">
+            <label for="currentPassword">Nuværende kodeord:</label><br>
+            <input type="password" id="currentPassword" name="currentPassword" required><br><br>
 
-        <label for="newPassword">Nyt kodeord:</label><br>
-        <input type="password" id="newPassword" name="newPassword" required><br><br>
+            <label for="newPassword">Nyt kodeord:</label><br>
+            <input type="password" id="newPassword" name="newPassword" required><br><br>
 
-        <input type="submit" name="librebooking_change_password_submit" value="Ændre kodeord">
+            <input type="submit" name="librebooking_change_password_submit" value="Opdater kodeord" class="button">
+        </div>
     </form>
 
     <script>
-    document.getElementById('change-password-button').addEventListener('click', function() {
-        var form = document.getElementById('change-password-form');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('change-password-button').addEventListener('click', function(event) {
+        event.preventDefault();
+        var fields = document.getElementById('change-password-fields');
+        fields.style.display = fields.style.display === 'none' ? 'block' : 'none';
     });
     </script>
     <?php
@@ -523,7 +400,7 @@ add_shortcode('librebooking_account_info', 'librebooking_account_info_shortcode'
 
 function librebooking_reservations_shortcode() {
     if (!isset($_SESSION['X-Booked-SessionToken'])) {
-        return 'You must be logged in to view reservations.';
+        return;
     }
 
     // Hent WordPress tidszoneindstillinger
@@ -535,62 +412,88 @@ function librebooking_reservations_shortcode() {
     $reservations = librebooking_get_reservations();
     if (is_array($reservations) && isset($reservations['reservations'])) {
         ob_start();
-        echo '<h2>Reservations</h2>';
-        echo '<ul>';
+        ?>
+        <style>
+            .librebooking-reservations-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+            .librebooking-reservation {
+                flex: 1 1 calc(50% - 20px);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                padding: 20px;
+                border-radius: 5px;
+                background-color: #fff;
+            }
+            @media (max-width: 768px) {
+                .librebooking-reservation {
+                    flex: 1 1 100%;
+                }
+            }
+        </style>
+        <h2>Reservations</h2>
+        <div class="librebooking-reservations-container">
+        <?php
         foreach ($reservations['reservations'] as $reservation) {
-            echo '<li>';
-            echo '<h3>' . esc_html($reservation['title']) . '</h3>';
-            echo '<p><strong>Reference Number:</strong> ' . esc_html($reservation['referenceNumber']) . '</p>';
+            ?>
+            <div class="librebooking-reservation">
+                <h3><?php echo esc_html($reservation['title']); ?></h3>
+                <p><strong>Reference Number:</strong> <?php echo esc_html($reservation['referenceNumber']); ?></p>
+                <?php
+                // Konverter start- og slutdato til lokal tid
+                $startDate = new DateTime($reservation['startDate'], new DateTimeZone('UTC'));
+                $endDate = new DateTime($reservation['endDate'], new DateTimeZone('UTC'));
+                $timezone = new DateTimeZone($wp_timezone);
+                $startDate->setTimezone($timezone);
+                $endDate->setTimezone($timezone);
+                ?>
+                <p><strong>Start Date:</strong> <?php echo esc_html($startDate->format('d-m-Y H:i:s')); ?></p>
+                <p><strong>End Date:</strong> <?php echo esc_html($endDate->format('d-m-Y H:i:s')); ?></p>
+                <p><strong>First Name:</strong> <?php echo esc_html($reservation['firstName']); ?></p>
+                <p><strong>Last Name:</strong> <?php echo esc_html($reservation['lastName']); ?></p>
+                <p><strong>Resource Name:</strong> <?php echo esc_html($reservation['resourceName']); ?></p>
+                <p><strong>Description:</strong> <?php echo esc_html($reservation['description']); ?></p>
+                <p><strong>Duration:</strong> <?php echo esc_html($reservation['duration']); ?></p>
 
-            // Konverter start- og slutdato til lokal tid
-            $startDate = new DateTime($reservation['startDate'], new DateTimeZone('UTC'));
-            $endDate = new DateTime($reservation['endDate'], new DateTimeZone('UTC'));
-            $timezone = new DateTimeZone($wp_timezone);
-            $startDate->setTimezone($timezone);
-            $endDate->setTimezone($timezone);
-
-            echo '<p><strong>Start Date:</strong> ' . esc_html($startDate->format('d-m-Y H:i:s')) . '</p>';
-            echo '<p><strong>End Date:</strong> ' . esc_html($endDate->format('d-m-Y H:i:s')) . '</p>';
-            echo '<p><strong>First Name:</strong> ' . esc_html($reservation['firstName']) . '</p>';
-            echo '<p><strong>Last Name:</strong> ' . esc_html($reservation['lastName']) . '</p>';
-            echo '<p><strong>Resource Name:</strong> ' . esc_html($reservation['resourceName']) . '</p>';
-            echo '<p><strong>Description:</strong> ' . esc_html($reservation['description']) . '</p>';
-            echo '<p><strong>Duration:</strong> ' . esc_html($reservation['duration']) . '</p>';
-
-            // Hent og vis detaljer via links
-            if (isset($reservation['links'])) {
-                foreach ($reservation['links'] as $link) {
-                    if ($link['title'] === 'get_resource') {
-                        $resource_details = librebooking_get_resource_details($link['href']);
-                        if ($resource_details) {
-                            echo '<h4>Resource Details</h4>';
-                            echo '<p>' . esc_html($resource_details) . '</p>';
-                        }
-                    } elseif ($link['title'] === 'get_reservation') {
-                        $reservation_details = librebooking_get_reservation_details($link['href']);
-                        if ($reservation_details) {
-                            echo '<h4>Reservation Details</h4>';
-                            echo '<p>' . esc_html($reservation_details) . '</p>';
-                        }
-                    } elseif ($link['title'] === 'get_user') {
-                        $user_details = librebooking_get_user_details($link['href']);
-                        if ($user_details) {
-                            echo '<h4>User Details</h4>';
-                            echo '<p>' . esc_html($user_details) . '</p>';
-                        }
-                    } elseif ($link['title'] === 'get_schedule') {
-                        $schedule_details = librebooking_get_schedule_details($link['href']);
-                        if ($schedule_details) {
-                            echo '<h4>Schedule Details</h4>';
-                            echo '<p>' . esc_html($schedule_details) . '</p>';
+                <?php
+                // Hent og vis detaljer via links
+                if (isset($reservation['links'])) {
+                    foreach ($reservation['links'] as $link) {
+                        if ($link['title'] === 'get_resource') {
+                            $resource_details = JSON_get_resource($link['href']);
+                            if ($resource_details) {
+                                echo '<h4>Resource Details</h4>';
+                                echo '<p>' . esc_html($resource_details) . '</p>';
+                            }
+                        } elseif ($link['title'] === 'get_reservation') {
+                            $reservation_details = JSON_get_reservation($link['href']);
+                            if ($reservation_details) {
+                                echo '<h4>Reservation Details</h4>';
+                                echo '<p>' . esc_html($reservation_details) . '</p>';
+                            }
+                        } elseif ($link['title'] === 'get_user') {
+                            $user_details = JSON_get_user($link['href']);
+                            if ($user_details) {
+                                echo '<h4>User Details</h4>';
+                                echo '<p>' . esc_html($user_details) . '</p>';
+                            }
+                        } elseif ($link['title'] === 'get_schedule') {
+                            $schedule_details = JSON_get_schedule($link['href']);
+                            if ($schedule_details) {
+                                echo '<h4>Schedule Details</h4>';
+                                echo '<p>' . esc_html($schedule_details) . '</p>';
+                            }
                         }
                     }
                 }
-            }
-
-            echo '</li>';
+                ?>
+            </div>
+            <?php
         }
-        echo '</ul>';
+        ?>
+        </div>
+        <?php
         return ob_get_clean();
     } else {
         return 'No reservations found or an error occurred.';
@@ -602,7 +505,7 @@ add_shortcode('librebooking_reservations', 'librebooking_reservations_shortcode'
 function librebooking_user_registration_shortcode() {
     // Hvis brugeren allerede er logget ind
     if (isset($_SESSION['X-Booked-SessionToken'])) {
-        return 'You are already logged in.';
+        return;
     }
 
     // Hvis formularen er indsendt
@@ -670,3 +573,164 @@ function librebooking_user_registration_shortcode() {
     return ob_get_clean();
 }
 add_shortcode('librebooking_user_registration', 'librebooking_user_registration_shortcode');
+
+
+// Shortcode-funktion til login
+function librebooking_login_shortcode() {
+    $login_failed = false;
+
+    // Hent URL til registreringssiden
+    $registration_page = get_page_by_title('Librebooking User Registration');
+    $registration_url = $registration_page ? get_permalink($registration_page->ID) : '#';
+
+    // Hent URL til reservationssiden
+    $reservation_page = get_page_by_title('Librebooking Reservation Formular');
+    $reservation_url = $reservation_page ? get_permalink($reservation_page->ID) : '#';
+
+    // Hvis sessionen ikke er aktiv, er brugeren ikke logget ind
+    if (session_status() !== PHP_SESSION_ACTIVE || !isset($_SESSION['X-Booked-SessionToken']) || librebooking_is_session_token_expired()) {
+        if (isset($_POST['librebooking_login'])) {
+            $username = sanitize_text_field($_POST['username']);
+            $password = sanitize_text_field($_POST['password']);
+            
+            if (librebooking_login($username, $password)) {
+                // Omdiriger til reservationssiden
+                wp_redirect($reservation_url);
+                exit;
+            } else {
+                $login_failed = true;
+            }
+        }
+
+        ob_start();
+        if ($login_failed) {
+            echo '<p>Login failed. Please check your credentials.</p>';
+        }
+        ?>
+        <form method="post">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" name="librebooking_login" value="Login" class="button">
+            <a href="<?php echo esc_url($registration_url); ?>" class="button">Registrer</a>
+        </form>
+        <?php
+        return ob_get_clean();
+    }
+
+    // Hvis brugeren allerede er logget ind
+    ob_start();
+    ?>
+    <p>You are already logged in. <a href="<?php echo esc_url($reservation_url); ?>">Go to Reservations</a></p>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('librebooking_login', 'librebooking_login_shortcode');
+
+// Shortcode-funktion til logout
+function librebooking_auth_shortcode($atts) {
+    $login_failed = false;
+
+    // Hent URL til registreringssiden
+    $registration_page = get_page_by_title('Librebooking User Registration');
+    $registration_url = $registration_page ? get_permalink($registration_page->ID) : '#';
+
+    // Hvis sessionen ikke er aktiv, er brugeren ikke logget ind
+    if (session_status() !== PHP_SESSION_ACTIVE || !isset($_SESSION['X-Booked-SessionToken']) || librebooking_is_session_token_expired()) {
+        if (isset($_POST['librebooking_login'])) {
+            $username = sanitize_text_field($_POST['username']);
+            $password = sanitize_text_field($_POST['password']);
+            
+            if (librebooking_login($username, $password)) {
+                ob_start();
+                echo 'Login successful.';
+                ?>
+                <form method="post">
+                    <input type="submit" name="librebooking_logout" value="Logout" class="button">
+                </form>
+                <?php
+                return ob_get_clean();
+            } else {
+                $login_failed = true;
+            }
+        }
+
+        ob_start();
+        if ($login_failed) {
+            echo '<p>Login failed. Please check your credentials.</p>';
+        }
+        ?>
+        <form method="post">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="submit" name="librebooking_login" value="Login" class="button">
+            <a href="<?php echo esc_url($registration_url); ?>" class="button">Registrer</a>
+        </form>
+        <?php
+        return ob_get_clean();
+    }
+
+    // Hvis brugeren allerede er logget ind
+    if (isset($_POST['librebooking_logout'])) {
+        if (librebooking_logout()) {
+            ob_start();
+            echo 'You have been logged out.';
+            ?>
+            <form method="post">
+                <label for="username">Username:</label><br>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="password">Password:</label><br>
+                <input type="password" id="password" name="password" required><br><br>
+                <input type="submit" name="librebooking_login" value="Login" class="button">
+                <a href="<?php echo esc_url($registration_url); ?>" class="button">Registrer</a>
+            </form>
+            <?php
+            return ob_get_clean();
+        } else {
+            return 'Logout failed. Please try again.';
+        }
+    }
+
+    ob_start();
+    ?>
+    <form method="post">
+        <input type="submit" name="librebooking_logout" value="Logout" class="button">
+    </form>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('librebooking_auth', 'librebooking_auth_shortcode');
+
+// Funktion til at generere en menu med links til brugerdefinerede sider
+function librebooking_custom_pages_menu_shortcode() {
+    // Definer en liste over sider med deres respektive titler og de navne, der skal vises i menuen
+    $pages = [];
+
+    // Tilføj sider kun hvis der er en aktiv session
+    if (isset($_SESSION['X-Booked-UserId']) && isset($_SESSION['X-Booked-SessionToken'])) {
+        $pages['Librebooking Reservation'] = 'Reservationer';
+        $pages['Librebooking Profile'] = 'Profil';
+        $pages['Librebooking Reservation Formular'] = 'Reservationsformular';
+    }
+
+    // Start output buffering
+    ob_start();
+
+    // Generer menuen
+    echo '<nav class="librebooking-custom-menu"><ul>';
+    foreach ($pages as $page_title => $menu_name) {
+        $page = get_page_by_title($page_title);
+        if ($page) {
+            $page_url = get_permalink($page->ID);
+            echo '<li><a href="' . esc_url($page_url) . '">' . esc_html($menu_name) . '</a></li>';
+        }
+    }
+    echo '</ul></nav>';
+
+    // Returner output
+    return ob_get_clean();
+}
+add_shortcode('librebooking_custom_menu', 'librebooking_custom_pages_menu_shortcode');

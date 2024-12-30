@@ -1,0 +1,1978 @@
+LibreBooking API Documentation
+Pass the following headers for all secure service calls: X-Booked-SessionToken and X-Booked-UserId
+Accessories
+Accounts
+Attributes
+Authentication
+Groups
+Reservations
+Resources
+Schedules
+Users
+Accessories
+Return To Top
+POST Services
+GET Services
+Name
+GetAllAccessories
+Description
+Loads all accessories
+Route
+/Web/Services/index.php/Accessories/
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "accessories": [
+        {
+            "links": [],
+            "message": null,
+            "id": 1,
+            "name": "accessoryName",
+            "quantityAvailable": 3,
+            "associatedResourceCount": 10
+        }
+    ]
+}
+Name
+GetAccessory
+Description
+Loads a specific accessory by id
+Route
+/Web/Services/index.php/Accessories/:accessoryId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "id": 1,
+    "name": "accessoryName",
+    "quantityAvailable": 10,
+    "associatedResources": [
+        {
+            "links": [],
+            "message": null,
+            "resourceId": 1,
+            "minQuantity": 4,
+            "maxQuantity": 10
+        }
+    ]
+}
+DELETE Services
+Accounts
+Return To Top
+POST Services
+Name
+CreateAccount
+Description
+Creates a user account. This does not authenticate
+Route
+/Web/Services/index.php/Accounts/
+Response
+Unstructured response of type AccountCreatedResponse
+Request
+{
+    "firstName": "FirstName",
+    "lastName": "LastName",
+    "emailAddress": "email@address.com",
+    "userName": "username",
+    "language": "da_da",
+    "timezone": "Europe\/Copenhagen",
+    "phone": "phone",
+    "organization": "organization",
+    "position": "position",
+    "customAttributes": [
+        {
+            "attributeId": 1,
+            "attributeValue": "attribute value"
+        }
+    ],
+    "password": "plaintextpassword",
+    "acceptTermsOfService": true
+}
+Name
+UpdateAccount
+Description
+Updates an existing user account
+Route
+/Web/Services/index.php/Accounts/:userId
+This service is secure and requires authentication
+Response
+Unstructured response of type AccountUpdatedResponse
+Request
+{
+    "firstName": "FirstName",
+    "lastName": "LastName",
+    "emailAddress": "email@address.com",
+    "userName": "username",
+    "language": "da_da",
+    "timezone": "Europe\/Copenhagen",
+    "phone": "phone",
+    "organization": "organization",
+    "position": "position",
+    "customAttributes": [
+        {
+            "attributeId": 1,
+            "attributeValue": "attribute value"
+        }
+    ]
+}
+Name
+UpdatePassword
+Description
+Updates the password for an existing user
+Route
+/Web/Services/index.php/Accounts/:userId/Password
+This service is secure and requires authentication
+Response
+Unstructured response of type AccountUpdatedResponse
+Request
+{
+    "currentPassword": "plain.text.current.password",
+    "newPassword": "plain.text.new.password"
+}
+GET Services
+Name
+GetAccount
+Description
+Gets the currently authenticated users's account information
+Route
+/Web/Services/index.php/Accounts/:userId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "userId": 1,
+    "firstName": "first",
+    "lastName": "last",
+    "emailAddress": "email@address.com",
+    "userName": "username",
+    "language": "da_da",
+    "timezone": "Europe\/Copenhagen",
+    "phone": "phone",
+    "organization": "organization",
+    "position": "position",
+    "customAttributes": [
+        {
+            "links": [],
+            "message": null,
+            "id": 123,
+            "label": "label",
+            "value": "value"
+        }
+    ],
+    "icsUrl": "webcal:\/\/path-to-calendar"
+}
+DELETE Services
+Attributes
+Return To Top
+POST Services
+Name
+CreateCustomAttribute
+Description
+Creates a new custom attribute.
+Allowed values for type: 1 (single line), 2 (multi line), 3 (select list), 4 (checkbox), 5 (datetime)
+Allowed values for categoryId: 1 (reservation), 2 (user), 4 (resource), 5 (resource type)
+appliesToIds only allowed for category 2, 4, 5 and must match the id of corresponding entities
+secondaryCategoryId and secondaryEntityIds only applies to category 1 and must match the id of the corresponding entities
+Route
+/Web/Services/index.php/Attributes/
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/attribute",
+            "title": "get_custom_attribute"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/attribute",
+            "title": "update_custom_attribute"
+        }
+    ],
+    "message": null,
+    "attributeId": 1
+}
+Request
+{
+    "label": "attribute name",
+    "type": 1,
+    "categoryId": 1,
+    "regex": "validation regex",
+    "required": true,
+    "possibleValues": [
+        "possible",
+        "values",
+        "only valid for select list"
+    ],
+    "sortOrder": 100,
+    "appliesToIds": [
+        10
+    ],
+    "adminOnly": true,
+    "isPrivate": true,
+    "secondaryCategoryId": 1,
+    "secondaryEntityIds": [
+        1,
+        2
+    ]
+}
+Name
+UpdateCustomAttribute
+Description
+Updates and existing custom attribute
+Allowed values for type: 1 (single line), 2 (multi line), 3 (select list), 4 (checkbox), 5 (datetime)
+Allowed values for categoryId: 1 (reservation), 2 (user), 4 (resource), 5 (resource type)
+appliesToIds only allowed for category 2, 4, 5 and must match the id of corresponding entities
+secondaryCategoryId and secondaryEntityIds only applies to category 1 and must match the id of the corresponding entities
+Route
+/Web/Services/index.php/Attributes/:attributeId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/attribute",
+            "title": "get_custom_attribute"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/attribute",
+            "title": "update_custom_attribute"
+        }
+    ],
+    "message": null,
+    "attributeId": 1
+}
+Request
+{
+    "label": "attribute name",
+    "type": 1,
+    "categoryId": 1,
+    "regex": "validation regex",
+    "required": true,
+    "possibleValues": [
+        "possible",
+        "values",
+        "only valid for select list"
+    ],
+    "sortOrder": 100,
+    "appliesToIds": [
+        10
+    ],
+    "adminOnly": true,
+    "isPrivate": true,
+    "secondaryCategoryId": 1,
+    "secondaryEntityIds": [
+        1,
+        2
+    ]
+}
+GET Services
+Name
+GetCategoryAttributes
+Description
+Gets all custom attribute definitions for the requested category
+Categories are RESERVATION = 1, USER = 2, RESOURCE = 4
+Route
+/Web/Services/index.php/Attributes/Category/:categoryId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "attributes": [
+        {
+            "links": [],
+            "message": null,
+            "id": 1,
+            "label": "display label",
+            "type": "Allowed values for type: 4 (checkbox), 2 (multi line), 3 (select list), 1 (single line)",
+            "categoryId": "Allowed values for category: 1 (reservation), 4 (resource), 5 (resource type), 2 (user)",
+            "regex": "validation regex",
+            "required": true,
+            "possibleValues": [
+                "possible",
+                "values"
+            ],
+            "sortOrder": 100,
+            "appliesToIds": [
+                10
+            ],
+            "adminOnly": true,
+            "isPrivate": true,
+            "secondaryCategoryId": 1,
+            "secondaryEntityIds": [
+                1,
+                2
+            ]
+        }
+    ]
+}
+Name
+GetAttribute
+Description
+Gets all custom attribute definitions for the requested attribute
+Route
+/Web/Services/index.php/Attributes/:attributeId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "id": 1,
+    "label": "display label",
+    "type": "Allowed values for type: 4 (checkbox), 2 (multi line), 3 (select list), 1 (single line)",
+    "categoryId": "Allowed values for category: 1 (reservation), 4 (resource), 5 (resource type), 2 (user)",
+    "regex": "validation regex",
+    "required": true,
+    "possibleValues": [
+        "possible",
+        "values"
+    ],
+    "sortOrder": 100,
+    "appliesToIds": [
+        10
+    ],
+    "adminOnly": true,
+    "isPrivate": true,
+    "secondaryCategoryId": 1,
+    "secondaryEntityIds": [
+        1,
+        2
+    ]
+}
+DELETE Services
+Name
+DeleteCustomAttribute
+Description
+Deletes an existing custom attribute
+Route
+/Web/Services/index.php/Attributes/:attributeId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [],
+    "message": "The item was deleted"
+}
+Authentication
+Return To Top
+POST Services
+Name
+SignOut
+Description
+Missing Description
+Route
+/Web/Services/index.php/Authentication/SignOut
+Response
+No response
+Request
+{
+    "userId": null,
+    "sessionToken": null
+}
+Name
+Authenticate
+Description
+Authenticates an existing LibreBooking user
+Route
+/Web/Services/index.php/Authentication/Authenticate
+Response
+{
+    "links": [],
+    "message": null,
+    "sessionToken": "sessiontoken",
+    "sessionExpires": "2024-12-26T10:11:39+0100",
+    "userId": 123,
+    "isAuthenticated": true,
+    "version": "1.0"
+}
+Request
+{
+    "username": null,
+    "password": null
+}
+GET Services
+DELETE Services
+Groups
+Return To Top
+POST Services
+Name
+CreateGroup
+Description
+Creates a new group
+Route
+/Web/Services/index.php/Groups/
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/attribute",
+            "title": "get_custom_attribute"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/attribute",
+            "title": "update_custom_attribute"
+        }
+    ],
+    "message": null,
+    "attributeId": 1
+}
+Request
+{
+    "name": "group name",
+    "isDefault": true
+}
+Name
+UpdateGroup
+Description
+Updates and existing group
+Route
+/Web/Services/index.php/Groups/:groupId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/group",
+            "title": "get_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/group",
+            "title": "update_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/delete\/group",
+            "title": "delete_group"
+        }
+    ],
+    "message": null,
+    "groupId": 1
+}
+Request
+{
+    "name": "group name",
+    "isDefault": true
+}
+Name
+ChangeGroupRoles
+Description
+Updates the roles for an existing group
+roleIds : 1 (Group Administrator), 2 (Application Administrator), 3 (Resource Administrator), 4 (Schedule Administrator)
+Route
+/Web/Services/index.php/Groups/:groupId/Roles
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/group",
+            "title": "get_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/group",
+            "title": "update_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/delete\/group",
+            "title": "delete_group"
+        }
+    ],
+    "message": null,
+    "groupId": 1
+}
+Request
+No request
+Name
+ChangeGroupPermissions
+Description
+Updates the permissions for an existing group
+Route
+/Web/Services/index.php/Groups/:groupId/Permissions
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/group",
+            "title": "get_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/group",
+            "title": "update_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/delete\/group",
+            "title": "delete_group"
+        }
+    ],
+    "message": null,
+    "groupId": 1
+}
+Request
+No request
+Name
+ChangeGroupUsers
+Description
+Updates the permissions for an existing group
+Route
+/Web/Services/index.php/Groups/:groupId/Users
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/group",
+            "title": "get_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/group",
+            "title": "update_group"
+        },
+        {
+            "href": "http:\/\/url\/to\/delete\/group",
+            "title": "delete_group"
+        }
+    ],
+    "message": null,
+    "groupId": 1
+}
+Request
+No request
+GET Services
+Name
+GetAllGroups
+Description
+Loads all groups
+Route
+/Web/Services/index.php/Groups/
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "groups": [
+        {
+            "links": [],
+            "message": null,
+            "id": 1,
+            "name": "group name",
+            "isDefault": true
+        }
+    ]
+}
+Name
+GetGroup
+Description
+Loads a specific group by id
+Route
+/Web/Services/index.php/Groups/:groupId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "id": 123,
+    "name": "group name",
+    "adminGroup": "http:\/\/url\/to\/group",
+    "permissions": [
+        "http:\/\/url\/to\/resource"
+    ],
+    "viewPermissions": [
+        "http:\/\/url\/to\/resource"
+    ],
+    "users": [
+        "http:\/\/url\/to\/user"
+    ],
+    "roles": [
+        1,
+        2
+    ],
+    "isDefault": true
+}
+DELETE Services
+Name
+DeleteGroup
+Description
+Deletes an existing group
+Route
+/Web/Services/index.php/Groups/:groupId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [],
+    "message": "The item was deleted"
+}
+Reservations
+Return To Top
+POST Services
+Name
+CreateReservation
+Description
+Creates a new reservation
+Route
+/Web/Services/index.php/Reservations/
+This service is secure and requires authentication
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/reservation",
+            "title": "get_reservation"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/reservation",
+            "title": "update_reservation"
+        }
+    ],
+    "message": null,
+    "referenceNumber": "referenceNumber",
+    "isPendingApproval": true
+}
+Request
+{
+    "accessories": [
+        {
+            "accessoryId": 1,
+            "quantityRequested": 2
+        }
+    ],
+    "customAttributes": [
+        {
+            "attributeId": 2,
+            "attributeValue": "some value"
+        }
+    ],
+    "description": "reservation description",
+    "endDateTime": "2024-12-26T10:11:39+0100",
+    "invitees": [
+        1,
+        2,
+        3
+    ],
+    "participants": [
+        1,
+        2
+    ],
+    "participatingGuests": [
+        "participating.guest@email.com"
+    ],
+    "invitedGuests": [
+        "invited.guest@email.com"
+    ],
+    "recurrenceRule": {
+        "type": "daily|monthly|none|weekly|yearly",
+        "interval": 3,
+        "monthlyType": "dayOfMonth|dayOfWeek|null",
+        "weekdays": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "repeatTerminationDate": "2024-12-26T10:11:39+0100"
+    },
+    "resourceId": 1,
+    "resources": [
+        2,
+        3
+    ],
+    "startDateTime": "2024-12-26T10:11:39+0100",
+    "title": "reservation title",
+    "userId": 1,
+    "startReminder": {
+        "value": 15,
+        "interval": "hours or minutes or days"
+    },
+    "endReminder": null,
+    "allowParticipation": true,
+    "retryParameters": [
+        {
+            "name": "name",
+            "value": "value"
+        }
+    ],
+    "termsAccepted": true
+}
+Name
+UpdateReservation
+Description
+Updates an existing reservation.
+Pass an optional updateScope query string parameter to restrict changes. Possible values for updateScope are this|full|future
+Route
+/Web/Services/index.php/Reservations/:referenceNumber
+This service is secure and requires authentication
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/reservation",
+            "title": "get_reservation"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/reservation",
+            "title": "update_reservation"
+        }
+    ],
+    "message": null,
+    "referenceNumber": "referenceNumber",
+    "isPendingApproval": true
+}
+Request
+{
+    "accessories": [
+        {
+            "accessoryId": 1,
+            "quantityRequested": 2
+        }
+    ],
+    "customAttributes": [
+        {
+            "attributeId": 2,
+            "attributeValue": "some value"
+        }
+    ],
+    "description": "reservation description",
+    "endDateTime": "2024-12-26T10:11:39+0100",
+    "invitees": [
+        1,
+        2,
+        3
+    ],
+    "participants": [
+        1,
+        2
+    ],
+    "participatingGuests": [
+        "participating.guest@email.com"
+    ],
+    "invitedGuests": [
+        "invited.guest@email.com"
+    ],
+    "recurrenceRule": {
+        "type": "daily|monthly|none|weekly|yearly",
+        "interval": 3,
+        "monthlyType": "dayOfMonth|dayOfWeek|null",
+        "weekdays": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "repeatTerminationDate": "2024-12-26T10:11:39+0100"
+    },
+    "resourceId": 1,
+    "resources": [
+        2,
+        3
+    ],
+    "startDateTime": "2024-12-26T10:11:39+0100",
+    "title": "reservation title",
+    "userId": 1,
+    "startReminder": {
+        "value": 15,
+        "interval": "hours or minutes or days"
+    },
+    "endReminder": null,
+    "allowParticipation": true,
+    "retryParameters": [
+        {
+            "name": "name",
+            "value": "value"
+        }
+    ],
+    "termsAccepted": true
+}
+Name
+ApproveReservation
+Description
+Approves a pending reservation.
+Route
+/Web/Services/index.php/Reservations/:referenceNumber/Approval
+This service is secure and requires authentication
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/reservation",
+            "title": "get_reservation"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/reservation",
+            "title": "update_reservation"
+        }
+    ],
+    "message": null,
+    "referenceNumber": "referenceNumber",
+    "isPendingApproval": true
+}
+Request
+No request
+Name
+CheckinReservation
+Description
+Checks in to a reservation.
+Route
+/Web/Services/index.php/Reservations/:referenceNumber/CheckIn
+This service is secure and requires authentication
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/reservation",
+            "title": "get_reservation"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/reservation",
+            "title": "update_reservation"
+        }
+    ],
+    "message": null,
+    "referenceNumber": "referenceNumber",
+    "isPendingApproval": true
+}
+Request
+No request
+Name
+CheckoutReservation
+Description
+Checks out of a reservation.
+Route
+/Web/Services/index.php/Reservations/:referenceNumber/CheckOut
+This service is secure and requires authentication
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/reservation",
+            "title": "get_reservation"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/reservation",
+            "title": "update_reservation"
+        }
+    ],
+    "message": null,
+    "referenceNumber": "referenceNumber",
+    "isPendingApproval": true
+}
+Request
+No request
+GET Services
+Name
+GetReservations
+Description
+Gets a list of reservations for the specified parameters.
+Optional query string parameters: userId, resourceId, scheduleId, startDateTime, endDateTime.
+If no dates are provided, reservations for the next two weeks will be returned.
+If dates do not include the timezone offset, the timezone of the authenticated user will be assumed.
+Route
+/Web/Services/index.php/Reservations/
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "reservations": [
+        {
+            "links": [],
+            "message": null,
+            "referenceNumber": "refnum",
+            "startDate": "2024-12-26T10:11:39+0100",
+            "endDate": "2024-12-26T10:11:39+0100",
+            "firstName": "first",
+            "lastName": "last",
+            "resourceName": "resourcename",
+            "title": "reservation title",
+            "description": "reservation description",
+            "requiresApproval": true,
+            "isRecurring": true,
+            "scheduleId": 22,
+            "userId": 11,
+            "resourceId": 123,
+            "duration": "1 timer 45 minutter",
+            "bufferTime": "1 minutter",
+            "bufferedStartDate": "2024-12-26T10:11:39+0100",
+            "bufferedEndDate": "2024-12-26T10:11:39+0100",
+            "participants": [
+                "participant name"
+            ],
+            "invitees": [
+                "invitee name"
+            ],
+            "participatingGuests": [],
+            "invitedGuests": [],
+            "startReminder": 10,
+            "endReminder": 10,
+            "color": "#FFFFFF",
+            "textColor": "#000000",
+            "checkInDate": "2024-12-26T10:11:39+0100",
+            "checkOutDate": "2024-12-26T10:11:39+0100",
+            "originalEndDate": "2024-12-26T10:11:39+0100",
+            "isCheckInEnabled": true,
+            "autoReleaseMinutes": 1,
+            "resourceStatusId": null,
+            "creditsConsumed": 15
+        }
+    ],
+    "startDateTime": null,
+    "endDateTime": null
+}
+Name
+GetReservation
+Description
+Loads a specific reservation by reference number
+Route
+/Web/Services/index.php/Reservations/:referenceNumber
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "referenceNumber": "refnum",
+    "startDate": "2024-12-26T10:11:39+0100",
+    "endDate": "2024-12-26T10:11:39+0100",
+    "title": "reservation title",
+    "description": "reservation description",
+    "requiresApproval": true,
+    "isRecurring": true,
+    "scheduleId": 123,
+    "resourceId": 123,
+    "owner": {
+        "links": [],
+        "message": null,
+        "userId": 123,
+        "firstName": "first",
+        "lastName": "last",
+        "emailAddress": "email@address.com"
+    },
+    "participants": [
+        {
+            "links": [],
+            "message": null,
+            "userId": 123,
+            "firstName": "first",
+            "lastName": "last",
+            "emailAddress": "email@address.com"
+        }
+    ],
+    "invitees": [
+        {
+            "links": [],
+            "message": null,
+            "userId": 123,
+            "firstName": "first",
+            "lastName": "last",
+            "emailAddress": "email@address.com"
+        }
+    ],
+    "customAttributes": [
+        {
+            "links": [],
+            "message": null,
+            "id": 123,
+            "label": "label",
+            "value": "value"
+        }
+    ],
+    "recurrenceRule": {
+        "type": "daily|monthly|none|weekly|yearly",
+        "interval": 3,
+        "monthlyType": "dayOfMonth|dayOfWeek|null",
+        "weekdays": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        "repeatTerminationDate": "2024-12-26T10:11:39+0100"
+    },
+    "attachments": [
+        {
+            "url": "http:\/\/example\/attachments\/url"
+        }
+    ],
+    "resources": [
+        {
+            "links": [],
+            "message": null,
+            "id": 123,
+            "name": "resource name",
+            "type": null,
+            "groups": null
+        }
+    ],
+    "accessories": [
+        {
+            "links": [],
+            "message": null,
+            "id": 1,
+            "name": "Example",
+            "quantityAvailable": 12,
+            "quantityReserved": 3
+        }
+    ],
+    "startReminder": {
+        "value": 15,
+        "interval": "hours or minutes or days"
+    },
+    "endReminder": {
+        "value": 15,
+        "interval": "hours or minutes or days"
+    },
+    "allowParticipation": null,
+    "checkInDate": null,
+    "checkOutDate": null,
+    "originalEndDate": null,
+    "isCheckInAvailable": null,
+    "isCheckoutAvailable": null,
+    "autoReleaseMinutes": null
+}
+DELETE Services
+Name
+DeleteReservation
+Description
+Deletes an existing reservation.
+Pass an optional updateScope query string parameter to restrict changes. Possible values for updateScope are this|full|future
+Route
+/Web/Services/index.php/Reservations/:referenceNumber
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": "The item was deleted"
+}
+Resources
+Return To Top
+POST Services
+Name
+CreateResource
+Description
+Creates a new resource
+Route
+/Web/Services/index.php/Resources/
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/resource",
+            "title": "get_resource"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/resource",
+            "title": "update_resource"
+        }
+    ],
+    "message": null,
+    "resourceId": 1
+}
+Request
+{
+    "name": "resource name",
+    "location": "location",
+    "contact": "contact information",
+    "notes": "notes",
+    "minLength": "1d0h0m",
+    "maxLength": "3600",
+    "requiresApproval": true,
+    "allowMultiday": true,
+    "maxParticipants": 100,
+    "minNotice": "86400",
+    "maxNotice": "0d12h30m",
+    "description": "description",
+    "scheduleId": 10,
+    "autoAssignPermissions": true,
+    "customAttributes": [
+        {
+            "attributeId": 1,
+            "attributeValue": "attribute value"
+        }
+    ],
+    "sortOrder": 1,
+    "statusId": 1,
+    "statusReasonId": 2,
+    "autoReleaseMinutes": 15,
+    "requiresCheckIn": true,
+    "color": "#ffffff",
+    "creditsPerSlot": 3,
+    "peakCreditsPerSlot": 6,
+    "maxConcurrentReservations": 1,
+    "bufferTime": "1d2h3m",
+    "groupIds": [],
+    "icsUrl": "http:\/\/ics.example.com\/a_calendar.ics",
+    "minNoticeAdd": "0d0h1m",
+    "minNoticeDelete": "0d0h2m",
+    "minNoticeUpdate": "0d0h3m",
+    "typeId": 1
+}
+Name
+UpdateResource
+Description
+Updates an existing resource
+Route
+/Web/Services/index.php/Resources/:resourceId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/resource",
+            "title": "get_resource"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/resource",
+            "title": "update_resource"
+        }
+    ],
+    "message": null,
+    "resourceId": 1
+}
+Request
+{
+    "name": "resource name",
+    "location": "location",
+    "contact": "contact information",
+    "notes": "notes",
+    "minLength": "1d0h0m",
+    "maxLength": "3600",
+    "requiresApproval": true,
+    "allowMultiday": true,
+    "maxParticipants": 100,
+    "minNotice": "86400",
+    "maxNotice": "0d12h30m",
+    "description": "description",
+    "scheduleId": 10,
+    "autoAssignPermissions": true,
+    "customAttributes": [
+        {
+            "attributeId": 1,
+            "attributeValue": "attribute value"
+        }
+    ],
+    "sortOrder": 1,
+    "statusId": 1,
+    "statusReasonId": 2,
+    "autoReleaseMinutes": 15,
+    "requiresCheckIn": true,
+    "color": "#ffffff",
+    "creditsPerSlot": 3,
+    "peakCreditsPerSlot": 6,
+    "maxConcurrentReservations": 1,
+    "bufferTime": "1d2h3m",
+    "groupIds": [],
+    "icsUrl": "http:\/\/ics.example.com\/a_calendar.ics",
+    "minNoticeAdd": "0d0h1m",
+    "minNoticeDelete": "0d0h2m",
+    "minNoticeUpdate": "0d0h3m",
+    "typeId": 1
+}
+GET Services
+Name
+GetStatuses
+Description
+Returns all available resource statuses
+Route
+/Web/Services/index.php/Resources/Status
+Response
+{
+    "links": [],
+    "message": null,
+    "statuses": [
+        {
+            "id": 0,
+            "name": "Hidden"
+        },
+        {
+            "id": 1,
+            "name": "Available"
+        },
+        {
+            "id": 2,
+            "name": "Unavailable"
+        }
+    ]
+}
+Name
+GetAllResources
+Description
+Loads all resources
+Route
+/Web/Services/index.php/Resources/
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "resources": [
+        {
+            "links": [],
+            "message": null,
+            "resourceId": 123,
+            "name": "resource name",
+            "location": "location",
+            "contact": "contact",
+            "notes": "notes",
+            "minLength": "0d0h2m",
+            "maxLength": "0d0h2m",
+            "requiresApproval": true,
+            "allowMultiday": true,
+            "maxParticipants": 10,
+            "minNoticeAdd": "0d0h2m",
+            "minNoticeUpdate": "0d0h2m",
+            "minNoticeDelete": "0d0h2m",
+            "maxNotice": "0d0h2m",
+            "description": "resource description",
+            "scheduleId": 123,
+            "icsUrl": null,
+            "statusId": 1,
+            "statusReasonId": 3,
+            "customAttributes": [
+                {
+                    "links": [],
+                    "message": null,
+                    "id": 123,
+                    "label": "label",
+                    "value": "value"
+                }
+            ],
+            "typeId": 2,
+            "groupIds": null,
+            "bufferTime": "1 hours 30 minutes",
+            "autoReleaseMinutes": 15,
+            "requiresCheckIn": true,
+            "color": "#ffffff",
+            "creditsPerSlot": 3,
+            "peakCreditsPerSlot": 6,
+            "maxConcurrentReservations": 1
+        }
+    ]
+}
+Name
+GetStatusReasons
+Description
+Returns all available resource status reasons
+Route
+/Web/Services/index.php/Resources/Status/Reasons
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "reasons": [
+        {
+            "id": 1,
+            "description": "reason description",
+            "statusId": 2
+        }
+    ]
+}
+Name
+GetAvailability
+Description
+Returns resource availability for the requested resource (optional). "availableAt" and "availableUntil" will include availability through the next 7 days
+Optional query string parameter: dateTime. If no dateTime is requested the current datetime will be used.
+Route
+/Web/Services/index.php/Resources/Availability
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "resources": [
+        {
+            "links": [
+                {
+                    "href": "http:\/\/get-user-url",
+                    "title": "get_user"
+                },
+                {
+                    "href": "http:\/\/get-reservation-url",
+                    "title": "get_reservation"
+                }
+            ],
+            "message": null,
+            "available": true,
+            "resource": {
+                "links": [
+                    {
+                        "href": "http:\/\/get-resource-url",
+                        "title": "get_resource"
+                    },
+                    {
+                        "href": "http:\/\/get-schedule-url",
+                        "title": "get_schedule"
+                    }
+                ],
+                "message": null,
+                "resourceId": 1,
+                "name": "resource name",
+                "scheduleId": 2,
+                "statusId": 1,
+                "statusReasonId": 123
+            },
+            "availableAt": "2024-12-26T10:11:39+0100",
+            "availableUntil": "2024-12-26T10:11:39+0100"
+        }
+    ]
+}
+Name
+GetGroups
+Description
+Returns the full resource group tree
+Route
+/Web/Services/index.php/Resources/Groups
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "groups": [
+        {
+            "id": 0,
+            "name": "Resource Group 1",
+            "label": "Resource Group 1",
+            "parent": null,
+            "parent_id": null,
+            "children": [
+                {
+                    "type": "resource",
+                    "group_id": 0,
+                    "resource_name": "Resource 1",
+                    "id": "resource-0-1",
+                    "label": "Resource 1",
+                    "resource_id": 1,
+                    "resourceAdminGroupId": null,
+                    "scheduleId": 2,
+                    "statusId": 1,
+                    "scheduleAdminGroupId": null,
+                    "requiresApproval": false,
+                    "isCheckInEnabled": true,
+                    "isAutoReleased": true,
+                    "autoReleaseMinutes": 30,
+                    "minLength": 10,
+                    "resourceTypeId": 1,
+                    "color": "#ffffff",
+                    "textColor": "#000000",
+                    "maxConcurrentReservations": 2
+                },
+                {
+                    "id": 1,
+                    "name": "Resource Group 2",
+                    "label": "Resource Group 2",
+                    "parent": null,
+                    "parent_id": 0,
+                    "children": [
+                        {
+                            "type": "resource",
+                            "group_id": 1,
+                            "resource_name": "Resource 2",
+                            "id": "resource-1-1",
+                            "label": "Resource 2",
+                            "resource_id": 1,
+                            "resourceAdminGroupId": null,
+                            "scheduleId": 2,
+                            "statusId": 1,
+                            "scheduleAdminGroupId": null,
+                            "requiresApproval": true,
+                            "isCheckInEnabled": false,
+                            "isAutoReleased": false,
+                            "autoReleaseMinutes": null,
+                            "minLength": null,
+                            "resourceTypeId": 2,
+                            "color": "#000000",
+                            "textColor": "#FFFFFF",
+                            "maxConcurrentReservations": 1
+                        }
+                    ],
+                    "type": "group"
+                }
+            ],
+            "type": "group"
+        }
+    ]
+}
+Name
+GetResource
+Description
+Loads a specific resource by id
+Route
+/Web/Services/index.php/Resources/:resourceId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "resourceId": 123,
+    "name": "resource name",
+    "location": "location",
+    "contact": "contact",
+    "notes": "notes",
+    "minLength": "0d0h2m",
+    "maxLength": "0d0h2m",
+    "requiresApproval": true,
+    "allowMultiday": true,
+    "maxParticipants": 10,
+    "minNoticeAdd": "0d0h2m",
+    "minNoticeUpdate": "0d0h2m",
+    "minNoticeDelete": "0d0h2m",
+    "maxNotice": "0d0h2m",
+    "description": "resource description",
+    "scheduleId": 123,
+    "icsUrl": null,
+    "statusId": 1,
+    "statusReasonId": 3,
+    "customAttributes": [
+        {
+            "links": [],
+            "message": null,
+            "id": 123,
+            "label": "label",
+            "value": "value"
+        }
+    ],
+    "typeId": 2,
+    "groupIds": null,
+    "bufferTime": "1 hours 30 minutes",
+    "autoReleaseMinutes": 15,
+    "requiresCheckIn": true,
+    "color": "#ffffff",
+    "creditsPerSlot": 3,
+    "peakCreditsPerSlot": 6,
+    "maxConcurrentReservations": 1
+}
+Name
+GetAvailability
+Description
+Returns resource availability for the requested resource (optional). "availableAt" and "availableUntil" will include availability through the next 7 days
+Optional query string parameter: dateTime. If no dateTime is requested the current datetime will be used.
+Route
+/Web/Services/index.php/Resources/:resourceId/Availability
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "resources": [
+        {
+            "links": [
+                {
+                    "href": "http:\/\/get-user-url",
+                    "title": "get_user"
+                },
+                {
+                    "href": "http:\/\/get-reservation-url",
+                    "title": "get_reservation"
+                }
+            ],
+            "message": null,
+            "available": true,
+            "resource": {
+                "links": [
+                    {
+                        "href": "http:\/\/get-resource-url",
+                        "title": "get_resource"
+                    },
+                    {
+                        "href": "http:\/\/get-schedule-url",
+                        "title": "get_schedule"
+                    }
+                ],
+                "message": null,
+                "resourceId": 1,
+                "name": "resource name",
+                "scheduleId": 2,
+                "statusId": 1,
+                "statusReasonId": 123
+            },
+            "availableAt": "2024-12-26T10:11:39+0100",
+            "availableUntil": "2024-12-26T10:11:39+0100"
+        }
+    ]
+}
+DELETE Services
+Name
+DeleteResource
+Description
+Deletes an existing resource
+Route
+/Web/Services/index.php/Resources/:resourceId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [],
+    "message": "The item was deleted"
+}
+Schedules
+Return To Top
+POST Services
+GET Services
+Name
+GetAllSchedules
+Description
+Loads all schedules
+Route
+/Web/Services/index.php/Schedules/
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "schedules": [
+        {
+            "links": [],
+            "message": null,
+            "daysVisible": 5,
+            "id": 123,
+            "isDefault": true,
+            "name": "schedule name",
+            "timezone": "timezone_name",
+            "weekdayStart": 0,
+            "availabilityBegin": "2024-12-26T10:11:39+0100",
+            "availabilityEnd": "2025-01-15T10:11:39+0100",
+            "maxResourcesPerReservation": 10,
+            "totalConcurrentReservationsAllowed": 0
+        }
+    ]
+}
+Name
+GetSchedule
+Description
+Loads a specific schedule by id
+Route
+/Web/Services/index.php/Schedules/:scheduleId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "daysVisible": 5,
+    "id": 123,
+    "isDefault": true,
+    "name": "schedule name",
+    "timezone": "timezone_name",
+    "weekdayStart": 0,
+    "icsUrl": "webcal:\/\/url\/to\/calendar",
+    "availabilityStart": "2024-12-26T10:11:39+0100",
+    "availabilityEnd": "2024-12-26T10:11:39+0100",
+    "maxResourcesPerReservation": 10,
+    "totalConcurrentReservationsAllowed": 0,
+    "periods": [
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ],
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ],
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ],
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ],
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ],
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ],
+        [
+            {
+                "start": "2024-12-26T10:11:39+0100",
+                "end": "2024-12-26T10:11:39+0100",
+                "label": "label",
+                "startTime": "10:11:39",
+                "endTime": "10:11:39",
+                "isReservable": true
+            }
+        ]
+    ]
+}
+Name
+GetSlots
+Description
+Loads slots for a specific schedule
+Optional query string parameters: resourceId, startDateTime, endDateTime.
+If no dates are provided the default schedule dates will be returned.
+If dates do not include the timezone offset, the timezone of the authenticated user will be assumed.
+Route
+/Web/Services/index.php/Schedules/:scheduleId/Slots
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "dates": [
+        {
+            "links": [],
+            "message": null,
+            "date": "2024-12-26T10:11:39+0100",
+            "resources": [
+                {
+                    "links": [],
+                    "message": null,
+                    "slots": [
+                        {
+                            "links": [],
+                            "message": null,
+                            "slotSpan": 4,
+                            "isReserved": true,
+                            "label": "username",
+                            "isReservable": false,
+                            "color": "#ffffff",
+                            "startDateTime": "2024-12-26T10:11:39+0100",
+                            "endDateTime": "2024-12-26T10:11:39+0100",
+                            "reservation": {
+                                "links": [],
+                                "message": null,
+                                "referenceNumber": "refnum",
+                                "startDate": "2024-12-26T10:11:39+0100",
+                                "endDate": "2024-12-26T10:11:39+0100",
+                                "firstName": "first",
+                                "lastName": "last",
+                                "resourceName": "resourcename",
+                                "title": "reservation title",
+                                "description": "reservation description",
+                                "requiresApproval": true,
+                                "isRecurring": true,
+                                "scheduleId": 22,
+                                "userId": 11,
+                                "resourceId": 123,
+                                "duration": "1 timer 45 minutter",
+                                "bufferTime": "1 minutter",
+                                "bufferedStartDate": "2024-12-26T10:11:39+0100",
+                                "bufferedEndDate": "2024-12-26T10:11:39+0100",
+                                "participants": [
+                                    "participant name"
+                                ],
+                                "invitees": [
+                                    "invitee name"
+                                ],
+                                "participatingGuests": [],
+                                "invitedGuests": [],
+                                "startReminder": 10,
+                                "endReminder": 10,
+                                "color": "#FFFFFF",
+                                "textColor": "#000000",
+                                "checkInDate": "2024-12-26T10:11:39+0100",
+                                "checkOutDate": "2024-12-26T10:11:39+0100",
+                                "originalEndDate": "2024-12-26T10:11:39+0100",
+                                "isCheckInEnabled": true,
+                                "autoReleaseMinutes": 1,
+                                "resourceStatusId": null,
+                                "creditsConsumed": 15
+                            }
+                        }
+                    ],
+                    "resourceId": 1,
+                    "resourceName": "resourcename"
+                }
+            ]
+        }
+    ]
+}
+DELETE Services
+Users
+Return To Top
+POST Services
+Name
+CreateUser
+Description
+Creates a new user
+Route
+/Web/Services/index.php/Users/
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/user",
+            "title": "get_user"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/user",
+            "title": "update_user"
+        }
+    ],
+    "message": null,
+    "userId": null
+}
+Request
+{
+    "firstName": "first",
+    "lastName": "last",
+    "emailAddress": "email@address.com",
+    "userName": "username",
+    "timezone": "America\/Chicago",
+    "phone": "123-456-7989",
+    "organization": "organization",
+    "position": "position",
+    "customAttributes": [
+        {
+            "attributeId": 99,
+            "attributeValue": "attribute value"
+        }
+    ],
+    "groups": [
+        1,
+        2,
+        4
+    ],
+    "password": "unencrypted password",
+    "language": "en_us"
+}
+Name
+UpdateUser
+Description
+Updates an existing user
+Route
+/Web/Services/index.php/Users/:userId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/user",
+            "title": "get_user"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/user",
+            "title": "update_user"
+        }
+    ],
+    "message": null,
+    "userId": null
+}
+Request
+{
+    "firstName": "first",
+    "lastName": "last",
+    "emailAddress": "email@address.com",
+    "userName": "username",
+    "timezone": "America\/Chicago",
+    "phone": "123-456-7989",
+    "organization": "organization",
+    "position": "position",
+    "customAttributes": [
+        {
+            "attributeId": 99,
+            "attributeValue": "attribute value"
+        }
+    ],
+    "groups": [
+        1,
+        2,
+        4
+    ]
+}
+Name
+UpdatePassword
+Description
+Updates the password for an existing user
+Route
+/Web/Services/index.php/Users/:userId/Password
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [
+        {
+            "href": "http:\/\/url\/to\/user",
+            "title": "get_user"
+        },
+        {
+            "href": "http:\/\/url\/to\/update\/user",
+            "title": "update_user"
+        }
+    ],
+    "message": null,
+    "userId": null
+}
+Request
+{
+    "password": "plaintext password"
+}
+GET Services
+Name
+GetAllUsers
+Description
+Loads all users that the current user can see.
+Optional query string parameters: username, email, firstName, lastName, phone, organization, position and any custom attributes.
+If searching on custom attributes, the query string parameter has to be in the format att#=value.
+For example, Users/?att1=ExpectedAttribute1Value
+Route
+/Web/Services/index.php/Users/
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "users": [
+        {
+            "links": [],
+            "message": null,
+            "id": 1,
+            "userName": "username",
+            "firstName": "first",
+            "lastName": "last",
+            "emailAddress": "email@address.com",
+            "phoneNumber": "phone",
+            "dateCreated": "2024-12-26T10:11:39+0100",
+            "lastLogin": "2024-12-26T10:11:39+0100",
+            "statusId": "statusId",
+            "timezone": "timezone",
+            "organization": "organization",
+            "position": "position",
+            "language": "language_code",
+            "customAttributes": [
+                {
+                    "links": [],
+                    "message": null,
+                    "id": 123,
+                    "label": "label",
+                    "value": "value"
+                }
+            ],
+            "currentCredits": "2.50",
+            "reservationColor": "#000000"
+        }
+    ]
+}
+Name
+GetUser
+Description
+Loads the requested user by Id
+Route
+/Web/Services/index.php/Users/:userId
+This service is secure and requires authentication
+Response
+{
+    "links": [],
+    "message": null,
+    "id": 1,
+    "userName": "username",
+    "firstName": "first",
+    "lastName": "last",
+    "emailAddress": "email@address.com",
+    "phoneNumber": "phone",
+    "lastLogin": "2024-12-26T10:11:39+0100",
+    "statusId": "statusId",
+    "timezone": "timezone",
+    "organization": "organization",
+    "position": "position",
+    "language": "language_code",
+    "icsUrl": "webcal:\/\/url\/to\/calendar",
+    "defaultScheduleId": 1,
+    "currentCredits": "2.50",
+    "reservationColor": "#000000",
+    "customAttributes": [
+        {
+            "links": [],
+            "message": null,
+            "id": 123,
+            "label": "label",
+            "value": "value"
+        }
+    ],
+    "permissions": [
+        {
+            "links": [],
+            "message": null,
+            "id": 123,
+            "name": "resource name",
+            "type": null,
+            "groups": null
+        }
+    ],
+    "groups": [
+        {
+            "links": [],
+            "message": null,
+            "id": 1,
+            "name": "group name",
+            "isDefault": null,
+            "roleIds": null
+        }
+    ]
+}
+DELETE Services
+Name
+DeleteUser
+Description
+Deletes an existing user
+Route
+/Web/Services/index.php/Users/:userId
+This service is secure and requires authentication
+This service is only available to application administrators
+Response
+{
+    "links": [],
+    "message": "The item was deleted"
+}

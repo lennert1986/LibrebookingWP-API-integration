@@ -169,22 +169,6 @@ function librebooking_clear_session() {
     }
 }
 
-
-// Funktion til at hente bookings
-function librebooking_get_bookings() {
-    return librebooking_api_request('bookings');
-}
-
-// Funktion til at hente kunder
-function librebooking_get_customers() {
-    return librebooking_api_request('customers');
-}
-
-// Funktion til at hente grupper
-function librebooking_get_groups() {
-    return librebooking_api_request('groups');
-}
-
 // Funktion til at hente reservationer
 function librebooking_get_reservations() {
     return librebooking_api_request('reservations');
@@ -203,21 +187,6 @@ function librebooking_get_accessories() {
 // Funktion til at hente ressourcer
 function librebooking_get_resources() {
     return librebooking_api_request('resources');
-}
-
-// Funktion til at hente schedules baseret p� scheduleId
-function librebooking_get_schedule_periods($scheduleId) {
-    return librebooking_api_request('schedules', 'GET', [], $scheduleId);
-}
-
-// Funktion til at hente alle schedules
-function librebooking_get_schedules() {
-    return librebooking_api_request('schedules');
-}
-
-// Funktion til at hente ICS feeds
-function librebooking_get_ics_feeds() {
-    return librebooking_api_request('icsFeeds');
 }
 
 // Funktion til at hente konto-oplysninger
@@ -288,31 +257,6 @@ function librebooking_logout() {
     return false;
 }
 
-// Funktion til at hente scheduleId baseret p� resourceId
-function librebooking_get_schedule_id_by_resource($resourceId) {
-    $resources_data = librebooking_get_resources();
-
-    foreach ($resources_data['resources'] as $resource) {
-        if ($resource['resourceId'] == $resourceId) {
-            return $resource['scheduleId'];
-        }
-    }
-
-    return null; // Returner null hvis ingen matchende resourceId findes
-}
-
-// Funktion til at generere dropdown-muligheder for tidspunkter baseret p� perioder
-function librebooking_generate_time_options($periods) {
-    $options = '';
-    foreach ($periods as $period) {
-        $startTime = esc_attr($period['startTime']);
-        $endTime = esc_attr($period['endTime']);
-        $options .= "<option value=\"$startTime\">$startTime</option>";
-        $options .= "<option value=\"$endTime\">$endTime</option>";
-    }
-    return $options;
-}
-
 // Funktion til at hente accessories og returnere som formularfelter
 function librebooking_get_accessories_fields() {
     $accessories_data = librebooking_get_accessories();
@@ -345,8 +289,8 @@ function librebooking_get_resource_details($url) {
     $response_body = wp_remote_retrieve_body($response);
     $resource_details = json_decode($response_body, true);
 
-    if (isset($resource_details['description'])) {
-        return $resource_details['description'];
+    if (isset($resource_details['name'])) {
+        return $resource_details['name'];
     }
 
     return 'No details available.';
@@ -386,6 +330,17 @@ function librebooking_get_user_details($url) {
     }
 
     return 'No details available.';
+}
+
+// Funktion til at hente alle skemaer
+function librebooking_get_all_schedules() {
+    $response = librebooking_api_request('schedules');
+
+    if (isset($response['error'])) {
+        return $response['error'];
+    }
+
+    return $response['schedules'] ?? [];
 }
 
 // Funktion til at hente schedule details
@@ -614,3 +569,34 @@ function librebooking_create_reservation($formData) {
 
     return librebooking_api_request('reservations', 'POST', $reservation_data);
 }
+
+
+// Tilføj CSS for at style menuen
+function librebooking_custom_menu_styles() {
+    ?>
+    <style>
+        .librebooking-custom-menu ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .librebooking-custom-menu li {
+            margin: 0 10px;
+        }
+
+        .librebooking-custom-menu li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .librebooking-custom-menu li a:hover {
+            color: #0073aa;
+        }
+    </style>
+    <?php
+}
+add_action('wp_head', 'librebooking_custom_menu_styles');
